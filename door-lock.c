@@ -7,19 +7,19 @@
 int pos = 0;
 Servo servo_13;
 
-const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
+const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2; // LCD pins that are interfaced with the Arduino digital pins
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 const byte ROWS = 4; 
 const byte COLS = 4; 
-char keys[ROWS][COLS] = {
+char keys[ROWS][COLS] = { //initializing the keypad pins and their values
   {'1','2','3','A'},
   {'4','5','6','B'},
   {'7','8','9','C'},
   {'*','0','#','D'}
 };
-byte rowPins[ROWS] = {6, 7, 8, 9}; 
-byte colPins[COLS] = {A1, A2, A3, A4}; 
+byte rowPins[ROWS] = {6, 7, 8, 9}; //row pins are interfaced with the given digital pins in the brackets
+byte colPins[COLS] = {A1, A2, A3, A4}; //column pins are interfaced with the given analog pins in the brackets
 
 char Data[Password_Lenght]; 
 char Data2[Password_Lenght];
@@ -35,19 +35,19 @@ int change_password_allow_time = 10000;
 long time_old = 0;
 bool just_allowed_pass =0;
 
-char FistTimePassword[] = {'1','2','3','4'}; // setup first-time password here
+char FirstTimePassword[] = {'1','2','3','4'}; // setup first-time password here
 
 
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 void setup(){
   
-  Serial.begin(9600);
-  Check_EEPROM();
+  Serial.begin(9600); //baud rate for data transmittion
+  Check_EEPROM(); //calling the function to check if EEPROM of the arduino is empty or some data is already stored
 
-  lcd.begin(16, 2);
+  lcd.begin(16, 2); 
 
-  pinMode(13, OUTPUT);
+  pinMode(13, OUTPUT); //pin 13 is connected to signal pin of the servo to receive the output
   digitalWrite(13, LOW);
   servo_13.attach(13, 500, 2500);
   
@@ -63,13 +63,13 @@ void loop()
     Serial.println(key);
   }
 
-
-if( mode == 3){
-    if(last_press_key == '#' && key_state == 2){
-      mode = 1;
+//keypad modes are used to set it's functionality to either enter default password or change password or to lock the device.
+if( mode == 3){ // device in mode 3 when it has been succesfully unlocked.
+    if(last_press_key == '#' && key_state == 2){ // mode 1 is achieved when user firsts unlocks the device and then presses "#" button for 1 second
+      mode = 1; //mode 1 indicated that user wants to change the existing password
     }
-    if(last_press_key == '*' && key_state == 2){
-      mode = 0;
+    if(last_press_key == '*' && key_state == 2){ // mode 0 achieved when user firsts unlocks the device and then presses "*" button for 1 second 
+      mode = 0; //mode 0 indicated that user has locked the device.
     lcd.clear();
     lcd.setCursor(4,0);
     lcd.print("LOCKED");
@@ -83,12 +83,12 @@ if( mode == 3){
     lcd.print("Enter Password");
     
  //      lcd.setCursor(1,1);
- //   lcd.print(FistTimePassword);
+ //   lcd.print(FirstTimePassword);
     
     
   }else if(mode == 1){
     lcd.setCursor(0,0);
-    lcd.print("Set New Password");    
+    lcd.print("Set New Password");  //mode 1 functionality  
   }else if(mode == 2){
     lcd.setCursor(0,0);
     lcd.print("Password Again");      
@@ -107,7 +107,7 @@ if( mode == 3){
   {
     if(mode == 0){
       lcd.clear();
-      if(!strcmp(Data, Master)) {
+      if(!strcmp(Data, Master)) {  //appropriate messages for mode 3
         lcd.setCursor(2, 0);
         lcd.print("WELCOME BACK");
         lcd.setCursor(4, 1);
@@ -120,7 +120,7 @@ if( mode == 3){
         
         // sweep the servo from 0 to 180 degrees in steps
   		// of 1 degrees
-  		for (pos = 0; pos <= 180; pos += 1) {
+  		for (pos = 0; pos <= 180; pos += 1) {         
     		// tell servo to go to position in variable 'pos'
     		servo_13.write(pos);
     		// wait 15 ms for servo to reach the position
@@ -155,7 +155,7 @@ if( mode == 3){
      }
       clearData(); 
     }else if(mode == 2){
-      if(!strcmp(Data, Data2)){
+      if(!strcmp(Data, Data2)){ //mode 2 is when user has to re-enter the password for confirmation during the process of password reset.
         lcd.clear();
         lcd.setCursor(0, 0); 
         lcd.print("New Password is ");  
@@ -192,7 +192,8 @@ if( mode == 3){
 
 void collectKey(){
   Data[data_count] = key; 
-  lcd.setCursor(4+data_count,1); 
+  lcd.setCursor(4+data_count,1);  //accepting the password keys from the user through keypad. 
+  //This can also be done through mobile phone, via a bluetooth app.
   lcd.print("*"); 
   data_count++;   
 }
@@ -210,7 +211,7 @@ void Check_EEPROM(){
   EEPROM.get(0, Master);
   if(Master[0] == 0 && Master[1] == 0 && Master[2] == 0 && Master[3] == 0){ // check if EEPRM have store password ?
     Serial.println("No EEPROM PASSWORD FOUND"); // if not found will burn EEPROM a first time password
-    EEPROM.put(0, FistTimePassword);
+    EEPROM.put(0, FirstTimePassword);
     EEPROM.get(0, Master);
   }
 }
